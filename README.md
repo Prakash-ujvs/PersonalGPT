@@ -1,4 +1,4 @@
-# PersonalGPT: a ~96K-parameter LLM built from scratch
+# PersonalGPT: a ~1M-parameter LLM built from scratch
 
 A tiny decoder-only transformer trained from scratch in PyTorch, with its own BPE tokenizer, KV-cache batched generation, ONNX export, and FastAPI serving (PyTorch or torch-free ONNX Runtime).
 
@@ -6,10 +6,10 @@ A tiny decoder-only transformer trained from scratch in PyTorch, with its own BP
 
 | Setting | Value |
 |---|---|
-| Parameters | 96,264 |
-| Layers / heads / width | 3 / 4 / 56 |
+| Parameters | 989,568 |
+| Layers / heads / width | 7 / 8 / 128 |
 | Vocab (BPE) | 256 (28 base characters + up to 228 merges) |
-| Context | 96 tokens, with a sliding window beyond that |
+| Context | 256 tokens, with a sliding window beyond that |
 | Output head | Tied to the token embedding |
 
 The config lives at the top of `tinyllm.py`: `V, D, H, L, CTX`. If you change it, retrain and re-export, because old `.pt` and `.onnx` files will not load.
@@ -43,7 +43,7 @@ pip install -r requirements.txt
 python prepare_data.py 50000      # about 35 MB of stories -> corpus.txt
 ```
 
-Any plain English text works, but a 96K-parameter model needs roughly 10 MB or more.
+Any plain English text works, but this ~1M-parameter model benefits from a large corpus such as the included 45 MB dataset.
 
 ## 2. Train
 
@@ -107,14 +107,14 @@ Interactive docs are at `http://localhost:8000/docs`.
 ## How it works
 
 - **Tokenizer:** BPE over characters, with merges that never cross word boundaries. Words are cached, so encoding is fast.
-- **Generation:** The whole batch of prompts is prefilled at once (left-padded and masked). Each step then feeds one token per prompt through the KV cache. When the context fills, the last 48 tokens are kept and re-prefilled.
+- **Generation:** The whole batch of prompts is prefilled at once (left-padded and masked). Each step then feeds one token per prompt through the KV cache. When the context fills, the last 128 tokens are kept and re-prefilled.
 - **ONNX:** The exported graph takes `idx`, `kmask` and `pos`, with dynamic batch and sequence axes. It has no cache and recomputes the window each step, which is fine at this size.
 
 ## Limitations
 
-- At this scale the model produces simple, grammatical sentences, not coherent long text.
+- At this scale the model can produce more coherent text, but it remains limited by the small character vocabulary and training corpus.
 - Only lowercase letters, space and period are supported.
-- `serve_onnx.py` has `CTX = 96` hardcoded and must match `tinyllm.CTX`.
+- `serveOnnx.py` has `CTX = 256` hardcoded and must match `tinyllm.CTX`.
 - Trailing spaces in prompts are stripped, since the tokenizer attaches spaces to the following word.
 
 ## Troubleshooting

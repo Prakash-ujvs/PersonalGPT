@@ -5,7 +5,7 @@ from bpe import BPE
 from tinyllm import load
 
 tok, model = BPE.load(), load()
-app = FastAPI(title="TinyLLM-10K")
+app = FastAPI(title="TinyLLM-1M")
 
 class Req(BaseModel):
     prompts: list[str] = Field(default=["the "], max_length=64)

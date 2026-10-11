@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from bpe import BPE
 
-CTX = 96                                    # must match tinyllm.CTX
+CTX = 256                                   # must match tinyllm.CTX
 tok = BPE.load()
 sess = ort.InferenceSession("tinyllm.onnx", providers=["CPUExecutionProvider"])
 rng = np.random.default_rng()
-app = FastAPI(title="TinyLLM-10K-ONNX")
+app = FastAPI(title="TinyLLM-1M-ONNX")
 
 def run(prompts, n, temp, top_k):
     ids = [(tok.encode(p.rstrip()) or [0])[-(CTX - 1):] for p in prompts]

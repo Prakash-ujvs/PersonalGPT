@@ -1,10 +1,10 @@
-"""~96K-param decoder-only transformer: BPE tokens, KV cache, batched generation, ONNX export.
+"""~1M-param decoder-only transformer: BPE tokens, KV cache, batched generation, ONNX export.
 Usage:  python tinyllm.py train corpus.txt   |   python tinyllm.py export
 """
 import sys, math, torch, torch.nn as nn, torch.nn.functional as F
 from bpe import BPE
 
-V, D, H, L, CTX = 256, 56, 4, 3, 96      # vocab, width, heads, layers, context (tokens)
+V, D, H, L, CTX = 256, 128, 8, 7, 256    # vocab, width, heads, layers, context (tokens)
 HD, PAD = D // H, 0
 
 class Block(nn.Module):
@@ -79,7 +79,7 @@ class TinyLLM(nn.Module):
 def load(path="tinyllm.pt"):
     m = TinyLLM(); m.load_state_dict(torch.load(path, map_location="cpu")); return m.eval()
 
-def train(corpus="corpus.txt", steps=10000, bs=128, lr=3e-3, warmup=200):
+def train(corpus="corpus.txt", steps=10000, bs=32, lr=3e-3, warmup=200):
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     text = open(corpus, encoding="utf-8").read()
     tok = BPE.train(text[:3_000_000], V); tok.save()          # tokenizer from a 3MB sample
