@@ -1,0 +1,8 @@
+torch
+fastapi
+uvicorn
+onnx
+onnxscript
+onnxruntime
+numpy
+datasets
