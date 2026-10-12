@@ -53,8 +53,16 @@ python tinyllm.py train corpus.txt
 
 - Trains the tokenizer on a 3 MB sample, saves `tokenizer.json`, then trains the model.
 - Uses a GPU automatically if available.
+- On CUDA, uses mixed precision, TF32 matmuls, fused AdamW, and fused scaled dot product attention when supported; batches are sampled with one vectorized window gather.
 - Runs 10,000 steps with warmup and cosine learning-rate decay, gradient clipping and AdamW.
 - Evaluates on a 5% held-out split every 500 steps and saves the best checkpoint to `tinyllm.pt`.
+
+For an additional CUDA speedup, opt into `torch.compile` (the first iteration will take longer to compile):
+
+```powershell
+$env:TINYLLM_COMPILE = "1"
+python tinyllm.py train corpus.txt
+```
 
 **Reading the log:**
 - Validation loss should fall, then flatten.
